@@ -1,0 +1,170 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+# Environment variables
+.env
+.env.local
+.env.development
+.env.production
+.env.test
+
+# Database
+*.sqlite
+*.sqlite3
+*.db
+*.pgsql
+database.sql
+dump.rdb
+
+# Logs
+logs/
+*.log
+log.txt
+error.log
+access.log
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# IDE and Editor files
+.vscode/
+.idea/
+*.sublime-*
+.project
+.classpath
+.settings/
+*.iml
+*.komodoproject
+
+# Build files
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Coverage directory used by tools like istanbul
+coverage/
+.nyc_output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Uploads
+uploads/
+uploads/*
+!uploads/.gitkeep
+
+# Backpack
+backpack-cache/
+
+# PM2
+.pm2/
+pm2.log
+
+# TypeScript
+*.tsbuildinfo
+
+# Redis
+dump.rdb
+
+# Database migrations
+migrations/*.sql
+seeders/*.sql
+
+# Certificates
+*.pem
+*.crt
+*.key
+
+# Debug
+debug.log
+
+# Environment specific
+.env.*.local
+
+# Session data
+sessions/
+
+# API documentation
+apidoc/
+
+# Vim swap files
+[._]*.s[a-v][a-z]
+[._]*.sw[a-p]
+[._]s[a-v][a-z]
+[._]sw[a-p]
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# pyenv
+.python-version
+
+# dotenv environment variable files
+.env*.local
+
+# Stores VSCode versions used for testing
+.vscode-test/
+
+# yarn v2
+.yarn/cache
+.yarn/unplugged
+.yarn/build-state.yml
+.yarn/install-state.gz
+.pnp.*
+
+# Serverless
+.serverless/
+
+# FuseBox cache
+.fusebox/
+
+# DynamoDB Local
+.dynamodb/
+
+# TernJS port file
+.tern-port
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Netlify functions
+.netlify
+
+# Storybook build
+storybook-static
+
+# Rollup
+rollup.config.js
+dist/
+
+# Service worker
+sw.*
+
+# Optional: Keep sensitive files
+config/keys.js
+config/database.json
+*.p12
+*.pfx
