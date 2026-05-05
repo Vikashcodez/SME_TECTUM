@@ -45,8 +45,7 @@ export const createTables = async () => {
                 installed_capacity VARCHAR(100)
             )
         `);
-        console.log('✅ Summary table created');
-
+       
         // Create users table
         await pool.query(`
             CREATE TABLE IF NOT EXISTS users (
@@ -61,7 +60,7 @@ export const createTables = async () => {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
-        console.log('✅ Users table created');
+        
 
         // Create indexes
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
