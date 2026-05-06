@@ -1,14 +1,43 @@
 import { Link, useLocation } from 'react-router-dom';
-import { MdDashboard , MdClose  } from "react-icons/md";
+import { IoMdDocument } from "react-icons/io";
+import { 
+  MdDashboard ,
+   MdClose,
+    MdExpandMore,
+     MdChevronRight, 
+ } from "react-icons/md";
+ import { TbReportAnalytics } from "react-icons/tb";
+import { useState } from 'react';
 
 
 const Sidebar = ({ isOpen, onClose }) => {
   const location = useLocation();
+  const [expandedMenus, setExpandedMenus] = useState({});
 
   const menuItems = [
     { name: 'Dashboard', icon: <MdDashboard />, path: '/user-dashboard' },
-   
+    {
+      name: 'Data Entry',
+      icon: <IoMdDocument  />,
+      submenu: [
+        { name: 'Business Profile', path: '/data-entry/business-profile' }
+      ]
+    },
+    {
+      name: 'Final Report',
+      icon: <TbReportAnalytics />,
+      submenu: [
+        { name: 'Company Report',  path: '/final-report/company-report' }
+      ]
+    }
   ];
+
+  const toggleMenu = (menuName) => {
+    setExpandedMenus(prev => ({
+      ...prev,
+      [menuName]: !prev[menuName]
+    }));
+  };
 
   return (
     <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
@@ -30,19 +59,57 @@ const Sidebar = ({ isOpen, onClose }) => {
       <nav className="mt-6 px-3">
         <div className="space-y-1">
           {menuItems.map((item) => (
-            <Link
-              key={item.name}
-              to={item.path}
-              onClick={onClose}
-              className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
-                location.pathname === item.path 
-                  ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
-                  : 'text-slate-400 hover:bg-slate-800 hover:text-white'
-              }`}
-            >
-              {item.icon}
-              {item.name}
-            </Link>
+            <div key={item.name}>
+              {item.submenu ? (
+                <>
+                  <button
+                    onClick={() => toggleMenu(item.name)}
+                    className={`w-full flex items-center justify-between px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                      expandedMenus[item.name]
+                        ? 'bg-slate-800 text-white'
+                        : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      {item.icon}
+                      {item.name}
+                    </div>
+                    <MdChevronRight className={`transform transition-transform ${expandedMenus[item.name] ? 'rotate-90' : ''}`} />
+                  </button>
+                  {expandedMenus[item.name] && (
+                    <div className="ml-4 mt-1 space-y-1 border-l border-slate-700">
+                      {item.submenu.map((subitem) => (
+                        <Link
+                          key={subitem.name}
+                          to={subitem.path}
+                          onClick={onClose}
+                          className={`block px-4 py-2 text-sm rounded-lg transition-colors pl-4 ${
+                            location.pathname === subitem.path
+                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+                              : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                          }`}
+                        >
+                          {subitem.name}
+                        </Link>
+                      ))}
+                    </div>
+                  )}
+                </>
+              ) : (
+                <Link
+                  to={item.path}
+                  onClick={onClose}
+                  className={`flex items-center px-4 py-3 text-sm font-medium rounded-lg transition-colors ${
+                    location.pathname === item.path 
+                      ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' 
+                      : 'text-slate-400 hover:bg-slate-800 hover:text-white'
+                  }`}
+                >
+                  {item.icon}
+                  {item.name}
+                </Link>
+              )}
+            </div>
           ))}
         </div>
       </nav>
