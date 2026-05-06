@@ -43,6 +43,10 @@ export const createTables = async () => {
                 year_of_establishment INTEGER,
                 number_of_employees INTEGER,
                 installed_capacity VARCHAR(100)
+                gst_number VARCHAR(50),
+                pan_number VARCHAR(50),
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_by REFERENCES users(user_id)
             )
         `);
        
