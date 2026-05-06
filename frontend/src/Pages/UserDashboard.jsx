@@ -1,161 +1,119 @@
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Layout from '../components/layout/Layout';
 
 const UserDashboard = () => {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
+  // Placeholder data for professional look
+  const stats = [
+    { label: 'Active Projects', value: '12', icon: '📊', color: 'bg-blue-500' },
+    { label: 'Pending Tasks', value: '08', icon: '📝', color: 'bg-orange-500' },
+    { label: 'Completed', value: '124', icon: '✅', color: 'bg-green-500' },
+    { label: 'Total Hours', value: '320', icon: '⏱️', color: 'bg-purple-500' },
+  ];
+
+  const ChevronRightIcon = () => (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+    </svg>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Navigation */}
-      <nav className="bg-white shadow-lg">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-green-600">User Dashboard</h1>
-            </div>
-            <div className="flex items-center gap-4">
-              <span className="text-gray-700">
-                Welcome, <span className="font-semibold">{user?.employee_name}</span>
-              </span>
-              <button
-                onClick={handleLogout}
-                className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md"
-              >
-                Logout
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <Layout title="Dashboard Overview">
+      {/* Welcome Banner */}
+      <div className="bg-gradient-to-r from-blue-600 to-blue-800 rounded-xl p-6 mb-6 text-white shadow-lg">
+        <h2 className="text-2xl font-bold mb-1">Welcome back, {user?.employee_name?.split(' ')[0]}!</h2>
+        <p className="opacity-90 text-sm">Here is what's happening with your projects today.</p>
+      </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-        {/* User Profile Card */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Profile Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-gray-600">Full Name</p>
-              <p className="text-lg font-semibold text-gray-900">{user?.employee_name}</p>
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+        {stats.map((stat) => (
+          <div key={stat.label} className="bg-white rounded-xl shadow-sm p-6 flex items-start justify-between border border-slate-100 hover:shadow-md transition-shadow">
+            <div>
+              <p className="text-sm text-slate-500 mb-1">{stat.label}</p>
+              <p className="text-2xl font-bold text-slate-800">{stat.value}</p>
             </div>
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-gray-600">Email</p>
-              <p className="text-lg font-semibold text-gray-900">{user?.email}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-gray-600">Role</p>
-              <p className="text-lg font-semibold text-gray-900 capitalize">{user?.role}</p>
-            </div>
-            <div className="bg-gray-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-gray-600">Status</p>
-              <p className="text-lg font-semibold text-green-600">Active</p>
+            <div className={`w-10 h-10 rounded-lg flex items-center justify-center text-xl bg-opacity-20 ${stat.color.replace('bg-', 'bg-').replace('500', '100')}`}>
+              {stat.icon}
             </div>
           </div>
-        </div>
+        ))}
+      </div>
 
-        {/* Company Information */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Company Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="bg-blue-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-blue-600">Company Name</p>
-              <p className="text-lg font-semibold text-gray-900">{user?.company_name || 'N/A'}</p>
-            </div>
-            <div className="bg-blue-50 p-4 rounded-md">
-              <p className="text-sm font-medium text-blue-600">Company ID</p>
-              <p className="text-lg font-semibold text-gray-900">{user?.company_id}</p>
-            </div>
+      {/* Content Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Profile & Company Card */}
+        <div className="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-lg font-bold text-slate-800">Profile & Company Details</h3>
           </div>
-          {user?.company_info && (
-            <>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                <div className="bg-blue-50 p-4 rounded-md">
-                  <p className="text-sm font-medium text-blue-600">Industry</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.company_info.industry || 'N/A'}</p>
+          <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">User Information</h4>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-slate-500">Full Name</p>
+                  <p className="font-medium text-slate-800">{user?.employee_name}</p>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-md">
-                  <p className="text-sm font-medium text-blue-600">Location</p>
-                  <p className="text-lg font-semibold text-gray-900">{user.company_info.location || 'N/A'}</p>
+                <div>
+                  <p className="text-xs text-slate-500">Email Address</p>
+                  <p className="font-medium text-slate-800">{user?.email}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-700 rounded-full capitalize">{user?.role}</span>
+                  <span className="px-2 py-1 text-xs font-medium bg-green-100 text-green-700 rounded-full">Active</span>
                 </div>
               </div>
-            </>
-          )}
-        </div>
-
-        {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Tasks</p>
-                <p className="text-3xl font-bold text-gray-900">0</p>
-              </div>
-              <div className="bg-blue-100 p-3 rounded-full">
-                <svg className="w-6 h-6 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" />
-                  <path fillRule="evenodd" d="M4 5a2 2 0 012-2 1 1 0 000 2H6a6 6 0 016 6v3a2 2 0 11-4 0v-3a2 2 0 00-2-2 1 1 0 000 2H4a2 2 0 01-2-2V5z" clipRule="evenodd" />
-                </svg>
-              </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Projects</p>
-                <p className="text-3xl font-bold text-gray-900">0</p>
-              </div>
-              <div className="bg-green-100 p-3 rounded-full">
-                <svg className="w-6 h-6 text-green-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4z" />
-                  <path fillRule="evenodd" d="M3 10a1 1 0 011-1h12a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6z" clipRule="evenodd" />
-                </svg>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-md p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-gray-600 text-sm">Reports</p>
-                <p className="text-3xl font-bold text-gray-900">0</p>
-              </div>
-              <div className="bg-purple-100 p-3 rounded-full">
-                <svg className="w-6 h-6 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" />
-                </svg>
+            <div className="border-t md:border-t-0 md:border-l border-slate-100 pt-6 md:pt-0 md:pl-6">
+              <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Company Details</h4>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-xs text-slate-500">Company Name</p>
+                  <p className="font-medium text-slate-800">{user?.company_name || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Location</p>
+                  <p className="font-medium text-slate-800">{user?.company_info?.location || 'N/A'}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500">Industry</p>
+                  <p className="font-medium text-slate-800">{user?.company_info?.industry || 'N/A'}</p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md font-medium transition">
-              Create Task
+        <div className="bg-white rounded-xl shadow-sm border border-slate-100 overflow-hidden">
+          <div className="p-6 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-lg font-bold text-slate-800">Quick Actions</h3>
+          </div>
+          <div className="p-4 space-y-2">
+            <button className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-lg text-slate-700 hover:text-blue-700 transition-colors group">
+              <span className="text-sm font-medium">Create New Task</span>
+              <ChevronRightIcon />
             </button>
-            <button className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md font-medium transition">
-              View Tasks
+            <button className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-lg text-slate-700 hover:text-blue-700 transition-colors group">
+              <span className="text-sm font-medium">Generate Report</span>
+              <ChevronRightIcon />
             </button>
-            <button className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md font-medium transition">
-              Generate Report
+            <button className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-lg text-slate-700 hover:text-blue-700 transition-colors group">
+              <span className="text-sm font-medium">Manage Team</span>
+              <ChevronRightIcon />
             </button>
-            <button className="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md font-medium transition">
-              Settings
+            <button className="w-full flex items-center justify-between px-4 py-3 bg-slate-50 hover:bg-blue-50 rounded-lg text-slate-700 hover:text-blue-700 transition-colors group">
+              <span className="text-sm font-medium">Account Settings</span>
+              <ChevronRightIcon />
             </button>
           </div>
         </div>
+
       </div>
-    </div>
+    </Layout>
   );
 };
 
