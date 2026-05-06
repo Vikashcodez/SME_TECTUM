@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import pool, { testConnection, createTables } from './src/config/database.js';
 import authRouter from './src/routes/auth.Routes.js';
+import companyRouter from './src/routes/company.Routes.js';
 
 
 dotenv.config();
@@ -17,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/api/auth', authRouter);
+app.use('/api/companies', companyRouter);
 
 // Health check route
 app.get('/health', (req, res) => {
