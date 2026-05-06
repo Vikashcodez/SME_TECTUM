@@ -42,11 +42,11 @@ export const createTables = async () => {
                 location VARCHAR(200),
                 year_of_establishment INTEGER,
                 number_of_employees INTEGER,
-                installed_capacity VARCHAR(100)
+                installed_capacity VARCHAR(100),
                 gst_number VARCHAR(50),
                 pan_number VARCHAR(50),
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                updated_by REFERENCES users(user_id)
+                updated_by INTEGER
             )
         `);
        
@@ -64,12 +64,24 @@ export const createTables = async () => {
                 updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
+
+        await pool.query(`
+            ALTER TABLE company
+            ADD CONSTRAINT fk_company_updated_by
+            FOREIGN KEY (updated_by) REFERENCES users(user_id)
+            ON DELETE SET NULL
+        `).catch((error) => {
+            if (error.code !== '42710') {
+                throw error;
+            }
+        });
         
 
         // Create indexes
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`);
         await pool.query(`CREATE INDEX IF NOT EXISTS idx_users_company_id ON users(company_id)`);
         console.log('✅ Indexes created');
+        
         
         // Create updated_at trigger function
         await pool.query(`

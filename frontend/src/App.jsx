@@ -8,6 +8,8 @@ import Login from './Pages/Login';
 import Register from './Pages/Register';
 import AdminDashboard from './Pages/AdminDashboard';
 import UserDashboard from './Pages/UserDashboard';
+import BusinessProfile from './Pages/BusinessProfile';
+import CompanyReport from './Pages/CompanyReport';
 
 const App = () => {
   return (
@@ -34,6 +36,24 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <UserDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/data-entry/business-profile"
+            element={
+              <ProtectedRoute>
+                <BusinessProfile />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/final-report/company-report"
+            element={
+              <ProtectedRoute>
+                <CompanyReport />
               </ProtectedRoute>
             }
           />

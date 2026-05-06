@@ -2,6 +2,21 @@ import React, { createContext, useState, useEffect } from 'react';
 
 export const AuthContext = createContext();
 
+const normalizeUserData = (userData) => {
+  if (!userData) return null;
+
+  const companyId = userData.company_id ?? userData.companyId ?? userData.company_info?.company_id ?? null;
+  const userId = userData.id ?? userData.user_id ?? null;
+
+  return {
+    ...userData,
+    id: userId,
+    user_id: userId,
+    company_id: companyId,
+    companyId,
+  };
+};
+
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -15,7 +30,7 @@ export const AuthProvider = ({ children }) => {
     
     if (savedToken && savedUser) {
       setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      setUser(normalizeUserData(JSON.parse(savedUser)));
     }
     setLoading(false);
   }, []);
@@ -41,10 +56,10 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Add isAdmin flag to user object (backend always provides this)
-      const userData = {
+      const userData = normalizeUserData({
         ...data.user,
         isAdmin: data.user.isAdmin === true // Ensure it's a boolean
-      };
+      });
 
       // Save to localStorage
       localStorage.setItem('token', data.token);
@@ -85,12 +100,14 @@ export const AuthProvider = ({ children }) => {
         throw new Error(data.message || 'Registration failed');
       }
 
+      const userRecord = normalizeUserData(data.user);
+
       // Save to localStorage
       localStorage.setItem('token', data.token);
-      localStorage.setItem('user', JSON.stringify(data.user));
+      localStorage.setItem('user', JSON.stringify(userRecord));
 
       setToken(data.token);
-      setUser(data.user);
+      setUser(userRecord);
 
       return data;
     } catch (err) {

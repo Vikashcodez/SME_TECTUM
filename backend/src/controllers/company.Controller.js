@@ -6,7 +6,7 @@ export const getAllCompanies = async (req, res) => {
         const query = `
             SELECT 
                 c.*,
-                u.username as updated_by_name
+                u.employee_name as updated_by_name
             FROM company c
             LEFT JOIN users u ON c.updated_by = u.user_id
             ORDER BY c.company_id DESC
@@ -37,7 +37,7 @@ export const getCompanyById = async (req, res) => {
         const query = `
             SELECT 
                 c.*,
-                u.username as updated_by_name
+                u.employee_name as updated_by_name
             FROM company c
             LEFT JOIN users u ON c.updated_by = u.user_id
             WHERE c.company_id = $1
@@ -131,7 +131,7 @@ export const updateCompany = async (req, res) => {
         const finalQuery = `
             SELECT 
                 c.*,
-                u.username as updated_by_name
+                u.employee_name as updated_by_name
             FROM company c
             LEFT JOIN users u ON c.updated_by = u.user_id
             WHERE c.company_id = $1
@@ -225,7 +225,7 @@ export const patchCompany = async (req, res) => {
         const finalQuery = `
             SELECT 
                 c.*,
-                u.username as updated_by_name
+                u.employee_name as updated_by_name
             FROM company c
             LEFT JOIN users u ON c.updated_by = u.user_id
             WHERE c.company_id = $1
@@ -264,7 +264,7 @@ export const searchCompanies = async (req, res) => {
         let query = `
             SELECT 
                 c.*,
-                u.username as updated_by_name
+                u.employee_name as updated_by_name
             FROM company c
             LEFT JOIN users u ON c.updated_by = u.user_id
             WHERE 1=1
