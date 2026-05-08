@@ -3,11 +3,10 @@ import { IoMdDocument } from "react-icons/io";
 import { 
   MdDashboard ,
    MdClose,
-    MdExpandMore,
      MdChevronRight, 
  } from "react-icons/md";
  import { TbReportAnalytics } from "react-icons/tb";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 
 const Sidebar = ({ isOpen, onClose }) => {
@@ -17,10 +16,23 @@ const Sidebar = ({ isOpen, onClose }) => {
   const menuItems = [
     { name: 'Dashboard', icon: <MdDashboard />, path: '/user-dashboard' },
     {
-      name: 'Data Entry',
+      name: 'Form Entry',
       icon: <IoMdDocument  />,
       submenu: [
-        { name: 'Business Profile', path: '/data-entry/business-profile' }
+        { name: 'Business Profile', path: '/data-entry/business-profile' },
+        // { name: 'Business Profile Form', path: '/data-entry/business-profile-form' },
+        { name: 'Compliance', path: '/data-entry/compliance' },
+        { name: 'Customer', path: '/data-entry/customer' },
+        { name: 'Delivery', path: '/data-entry/delivery' },
+        { name: 'Financial', path: '/data-entry/financial' },
+        { name: 'Governance', path: '/data-entry/governance' },
+        { name: 'GST Data', path: '/data-entry/gst-data' },
+        { name: 'Industry Specific', path: '/data-entry/industry-specific' },
+        { name: 'Inventory', path: '/data-entry/inventory' },
+        { name: 'OEM Readiness', path: '/data-entry/oem-readiness' },
+        { name: 'Production', path: '/data-entry/production' },
+        { name: 'Quality', path: '/data-entry/quality' },
+        { name: 'Supplier', path: '/data-entry/supplier' }
       ]
     },
     {
@@ -39,8 +51,16 @@ const Sidebar = ({ isOpen, onClose }) => {
     }));
   };
 
+  useEffect(() => {
+    setExpandedMenus((prev) => ({
+      ...prev,
+      ...(location.pathname.startsWith('/data-entry') ? { 'Form Entry': true } : {}),
+      ...(location.pathname.startsWith('/final-report') ? { 'Final Report': true } : {}),
+    }));
+  }, [location.pathname]);
+
   return (
-    <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+    <aside className={`fixed inset-y-0 left-0 z-30 w-64 bg-slate-900 text-white transform transition-transform duration-300 ease-in-out lg:translate-x-0 flex h-screen flex-col ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
       
       <div className="flex items-center justify-between h-16 px-4 border-b border-slate-800">
         <div className="flex items-center gap-2">
@@ -56,7 +76,7 @@ const Sidebar = ({ isOpen, onClose }) => {
         </button>
       </div>
 
-      <nav className="mt-6 px-3">
+      <nav className="sidebar-scroll mt-6 px-3 flex-1 overflow-y-auto pb-4">
         <div className="space-y-1">
           {menuItems.map((item) => (
             <div key={item.name}>
@@ -74,9 +94,9 @@ const Sidebar = ({ isOpen, onClose }) => {
                       {item.icon}
                       {item.name}
                     </div>
-                    <MdChevronRight className={`transform transition-transform ${expandedMenus[item.name] ? 'rotate-90' : ''}`} />
+                    <MdChevronRight className={`transform transition-transform ${(expandedMenus[item.name] || item.submenu?.some((subitem) => subitem.path === location.pathname)) ? 'rotate-90' : ''}`} />
                   </button>
-                  {expandedMenus[item.name] && (
+                  {(expandedMenus[item.name] || item.submenu?.some((subitem) => subitem.path === location.pathname)) && (
                     <div className="ml-4 mt-1 space-y-1 border-l border-slate-700">
                       {item.submenu.map((subitem) => (
                         <Link
