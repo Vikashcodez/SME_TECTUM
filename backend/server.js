@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import pool, { testConnection, createTables } from './src/config/database.js';
 import authRouter from './src/routes/auth.Routes.js';
 import companyRouter from './src/routes/company.Routes.js';
+import financeRoutes from './src/routes/finance/index.js';
 
 
 dotenv.config();
@@ -19,6 +20,21 @@ app.use(express.urlencoded({ extended: true }));
 // Routes
 app.use('/api/auth', authRouter);
 app.use('/api/companies', companyRouter);
+// Finance routes (mounted by resource)
+app.use('/api/finance/monthly', financeRoutes.monthlyFinancial);
+app.use('/api/finance/gst/b2b', financeRoutes.gstB2b);
+app.use('/api/finance/gst/b2c/interstate', financeRoutes.gstB2cInterstate);
+app.use('/api/finance/gst/b2c/intrastate', financeRoutes.gstB2cIntrastate);
+app.use('/api/finance/gst/exports', financeRoutes.gstExports);
+app.use('/api/finance/gst/nil_exempt', financeRoutes.gstNilExempt);
+app.use('/api/finance/gst/credit_debit', financeRoutes.gstCreditDebit);
+app.use('/api/finance/gst/advances', financeRoutes.gstAdvances);
+app.use('/api/finance/gst/hsn', financeRoutes.gstHsnSummary);
+app.use('/api/finance/gst/documents', financeRoutes.gstDocuments);
+app.use('/api/finance/receivable_ageing', financeRoutes.receivableAgeing);
+app.use('/api/finance/payable_ageing', financeRoutes.payableAgeing);
+app.use('/api/finance/loan_emi', financeRoutes.loanEmi);
+app.use('/api/finance/cash_flow', financeRoutes.cashFlow);
 
 // Health check route
 app.get('/health', (req, res) => {
