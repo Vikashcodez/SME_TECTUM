@@ -9,7 +9,6 @@ import Register from './Pages/Register';
 import AdminDashboard from './Pages/AdminDashboard';
 import UserDashboard from './Pages/UserDashboard';
 import BusinessProfile from './Pages/BusinessProfile';
-
 const dataEntryPages = [
   { path: '/data-entry/business-profile', element: <BusinessProfile /> },
 ];
