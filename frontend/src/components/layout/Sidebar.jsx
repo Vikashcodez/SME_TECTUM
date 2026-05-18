@@ -20,19 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: <IoMdDocument  />,
       submenu: [
         { name: 'Business Profile', path: '/data-entry/business-profile' },
-        // { name: 'Business Profile Form', path: '/data-entry/business-profile-form' },
-        { name: 'Compliance', path: '/data-entry/compliance' },
-        { name: 'Customer', path: '/data-entry/customer' },
-        { name: 'Delivery', path: '/data-entry/delivery' },
-        { name: 'Financial', path: '/data-entry/financial' },
-        { name: 'Governance', path: '/data-entry/governance' },
-        { name: 'GST Data', path: '/data-entry/gst-data' },
-        { name: 'Industry Specific', path: '/data-entry/industry-specific' },
-        { name: 'Inventory', path: '/data-entry/inventory' },
-        { name: 'OEM Readiness', path: '/data-entry/oem-readiness' },
-        { name: 'Production', path: '/data-entry/production' },
-        { name: 'Quality', path: '/data-entry/quality' },
-        { name: 'Supplier', path: '/data-entry/supplier' }
+        
       ]
     },
     {
