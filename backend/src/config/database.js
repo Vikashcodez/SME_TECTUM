@@ -134,6 +134,7 @@ export const createTables = async () => {
                 months_with_cash_shortage VARCHAR(100),
                 cash_reserve_months NUMERIC(10,2),
                 draft_status VARCHAR(20) DEFAULT 'Draft',
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -156,6 +157,7 @@ export const createTables = async () => {
                 category VARCHAR(100),
                 product_service_name VARCHAR(255),
                 hsn_sac_code VARCHAR(50),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -170,6 +172,7 @@ export const createTables = async () => {
                 place_of_supply VARCHAR(100),
                 taxable_value NUMERIC(18,2),
                 igst NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -183,6 +186,7 @@ export const createTables = async () => {
                 taxable_value NUMERIC(18,2),
                 cgst NUMERIC(18,2),
                 sgst NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -198,6 +202,7 @@ export const createTables = async () => {
                 igst NUMERIC(18,2),
                 port_code VARCHAR(50),
                 shipping_bill VARCHAR(100),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -209,6 +214,7 @@ export const createTables = async () => {
                 financial_id INT REFERENCES monthly_financial_entries(financial_id),
                 interstate_sales NUMERIC(18,2),
                 intrastate_sales NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -223,6 +229,7 @@ export const createTables = async () => {
                 note_date DATE,
                 note_type VARCHAR(20),
                 note_value NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -234,6 +241,7 @@ export const createTables = async () => {
                 financial_id INT REFERENCES monthly_financial_entries(financial_id),
                 place_of_supply VARCHAR(100),
                 gross_advance_received NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -250,6 +258,7 @@ export const createTables = async () => {
                 igst NUMERIC(18,2),
                 cgst NUMERIC(18,2),
                 sgst NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -261,6 +270,7 @@ export const createTables = async () => {
                 financial_id INT REFERENCES monthly_financial_entries(financial_id),
                 total_invoices_issued INT,
                 invoices_cancelled INT,
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -277,7 +287,7 @@ export const createTables = async () => {
                 days_90_180 NUMERIC(18,2),
                 above_180_days NUMERIC(18,2),
                 total_receivable NUMERIC(18,2),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_by INTEGER REFERENCES users(user_id)
             )
         `);
 
@@ -293,6 +303,7 @@ export const createTables = async () => {
                 days_90_180 NUMERIC(18,2),
                 above_180_days NUMERIC(18,2),
                 total_payable NUMERIC(18,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -316,6 +327,7 @@ export const createTables = async () => {
                 restructuring_history TEXT,
                 emi_burden_percent NUMERIC(10,2),
                 debt_to_equity_ratio NUMERIC(10,2),
+                created_by INTEGER REFERENCES users(user_id),
                 created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
             )
         `);
@@ -338,7 +350,7 @@ export const createTables = async () => {
                 dividends_paid NUMERIC(18,2),
                 cash_at_beginning NUMERIC(18,2),
                 cash_at_end NUMERIC(18,2),
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                created_by INTEGER REFERENCES users(user_id)
             )
         `);
 
