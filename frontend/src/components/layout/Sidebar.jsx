@@ -20,6 +20,7 @@ const Sidebar = ({ isOpen, onClose }) => {
       icon: <IoMdDocument  />,
       submenu: [
         { name: 'Business Profile', path: '/data-entry/business-profile' },
+        { name: 'Financial Report', path: '/FinacleReport' }
         
       ]
     },
