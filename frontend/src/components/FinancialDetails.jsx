@@ -3,17 +3,58 @@ import React from 'react';
 import { X, Calendar, TrendingUp, TrendingDown, DollarSign, Building, Percent, CreditCard, Activity } from 'lucide-react';
 
 const FinancialDetails = ({ financial, onClose }) => {
+  // Calculate derived values if not provided by backend
+  const workingCapital = financial.working_capital !== null && financial.working_capital !== undefined 
+    ? financial.working_capital 
+    : (financial.current_assets || 0) - (financial.current_liabilities || 0);
+  
+  const currentRatio = financial.current_ratio !== null && financial.current_ratio !== undefined
+    ? financial.current_ratio
+    : financial.current_liabilities > 0 ? (financial.current_assets || 0) / (financial.current_liabilities || 1) : 0;
+  
+  const debtToEquityRatio = financial.debt_to_equity_ratio !== null && financial.debt_to_equity_ratio !== undefined
+    ? financial.debt_to_equity_ratio
+    : financial.equity > 0 ? (financial.total_debt || 0) / (financial.equity || 1) : 0;
+  
+  const totalReceivables = financial.total_accounts_receivable !== null && financial.total_accounts_receivable !== undefined
+    ? financial.total_accounts_receivable
+    : (financial.recv_not_due || 0) + (financial.recv_less_30 || 0) + (financial.recv_30_60 || 0) + 
+      (financial.recv_60_90 || 0) + (financial.recv_90_180 || 0) + (financial.recv_above_180 || 0);
+  
+  const totalPayables = financial.total_accounts_payable !== null && financial.total_accounts_payable !== undefined
+    ? financial.total_accounts_payable
+    : (financial.pay_not_due || 0) + (financial.pay_less_30 || 0) + (financial.pay_30_60 || 0) + 
+      (financial.pay_60_90 || 0) + (financial.pay_90_180 || 0) + (financial.pay_above_180 || 0);
+  
+  const isuRatio = financial.itc_utilization_ratio !== null && financial.itc_utilization_ratio !== undefined
+    ? financial.itc_utilization_ratio
+    : financial.total_gst_liability > 0 ? ((financial.input_tax_credit || 0) / (financial.total_gst_liability || 1)) * 100 : 0;
+  
+  const taxToRevenueRatio = financial.tax_to_revenue_ratio !== null && financial.tax_to_revenue_ratio !== undefined
+    ? financial.tax_to_revenue_ratio
+    : financial.revenue > 0 ? ((financial.monthly_gst_tax_paid || 0) / (financial.revenue || 1)) * 100 : 0;
+  
+  const emiBurdenPercent = financial.emi_burden_percent !== null && financial.emi_burden_percent !== undefined
+    ? financial.emi_burden_percent
+    : (financial.revenue - financial.expenses) > 0 ? ((financial.emi_amount || 0) / (financial.revenue - financial.expenses)) * 100 : 0;
+  
+  const cashReserveMonths = financial.cash_reserve_months !== null && financial.cash_reserve_months !== undefined
+    ? financial.cash_reserve_months
+    : financial.avg_monthly_outflows > 0 ? (financial.cash_balance || 0) / (financial.avg_monthly_outflows || 1) : 0;
+  
   const formatCurrency = (amount) => {
+    const numAmount = typeof amount === 'number' ? amount : parseFloat(amount) || 0;
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
       currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0
-    }).format(amount || 0);
+    }).format(numAmount);
   };
 
   const formatPercentage = (value) => {
-    return `${(value || 0).toFixed(2)}%`;
+    const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
+    return `${numValue.toFixed(2)}%`;
   };
 
   const InfoCard = ({ title, value, icon: Icon, color }) => (
@@ -35,23 +76,34 @@ const FinancialDetails = ({ financial, onClose }) => {
     </div>
   );
 
-  const DetailItem = ({ label, value, format = 'currency' }) => (
-    <div className="bg-gray-50 rounded-lg p-3">
-      <p className="text-xs text-gray-600 mb-1">{label}</p>
-      <p className="text-base font-medium text-gray-900">
-        {format === 'currency' ? formatCurrency(value) : 
-         format === 'percentage' ? formatPercentage(value) : 
-         value || 'N/A'}
-      </p>
-    </div>
-  );
+  const DetailItem = ({ label, value, format = 'currency' }) => {
+    let displayValue = 'N/A';
+    
+    if (value !== null && value !== undefined && value !== '') {
+      if (format === 'currency') {
+        displayValue = formatCurrency(value);
+      } else if (format === 'percentage') {
+        displayValue = formatPercentage(value);
+      } else if (format === 'decimal') {
+        const numValue = typeof value === 'number' ? value : parseFloat(value) || 0;
+        displayValue = numValue.toFixed(2);
+      } else {
+        displayValue = value;
+      }
+    }
+    
+    return (
+      <div className="bg-gray-50 rounded-lg p-3">
+        <p className="text-xs text-gray-600 mb-1">{label}</p>
+        <p className="text-base font-medium text-gray-900">{displayValue}</p>
+      </div>
+    );
+  };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" onClick={onClose}></div>
-
-        <div className="inline-block align-bottom bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+    <div className="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center">
+      <div className="fixed inset-0 bg-gray-500 bg-opacity-75 pointer-events-auto z-40" onClick={onClose}></div>
+      <div className="relative z-50 bg-white rounded-xl text-left overflow-hidden shadow-xl transform transition-all w-full max-w-4xl mx-4">
           <div className="bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
@@ -91,7 +143,7 @@ const FinancialDetails = ({ financial, onClose }) => {
               />
               <InfoCard 
                 title="Working Capital" 
-                value={formatCurrency(financial.working_capital)}
+                value={formatCurrency(workingCapital)}
                 icon={Building}
                 color="text-purple-600"
               />
@@ -108,6 +160,8 @@ const FinancialDetails = ({ financial, onClose }) => {
             {/* Profitability */}
             <Section title="Profitability Metrics">
               <DetailItem label="Revenue" value={financial.revenue} />
+              <DetailItem label="B2B Sales" value={financial.b2b_sales} />
+              <DetailItem label="B2C Sales" value={financial.b2c_sales} />
               <DetailItem label="Expenses" value={financial.expenses} />
               <DetailItem label="Net Profit" value={financial.net_profit} />
             </Section>
@@ -116,11 +170,11 @@ const FinancialDetails = ({ financial, onClose }) => {
             <Section title="Balance Sheet">
               <DetailItem label="Current Assets" value={financial.current_assets} />
               <DetailItem label="Current Liabilities" value={financial.current_liabilities} />
-              <DetailItem label="Working Capital" value={financial.working_capital} />
-              <DetailItem label="Current Ratio" value={financial.current_ratio} format="percentage" />
+              <DetailItem label="Working Capital" value={workingCapital} />
+              <DetailItem label="Current Ratio" value={currentRatio} format="percentage" />
               <DetailItem label="Total Debt" value={financial.total_debt} />
               <DetailItem label="Equity" value={financial.equity} />
-              <DetailItem label="Debt to Equity Ratio" value={financial.debt_to_equity_ratio} format="percentage" />
+              <DetailItem label="Debt to Equity Ratio" value={debtToEquityRatio} format="percentage" />
             </Section>
 
             {/* Receivables Aging */}
@@ -131,7 +185,7 @@ const FinancialDetails = ({ financial, onClose }) => {
               <DetailItem label="60-90 Days" value={financial.recv_60_90} />
               <DetailItem label="90-180 Days" value={financial.recv_90_180} />
               <DetailItem label="180+ Days" value={financial.recv_above_180} />
-              <DetailItem label="Total Receivables" value={financial.total_accounts_receivable} />
+              <DetailItem label="Total Receivables" value={totalReceivables} />
             </Section>
 
             {/* Payables Aging */}
@@ -142,7 +196,7 @@ const FinancialDetails = ({ financial, onClose }) => {
               <DetailItem label="60-90 Days" value={financial.pay_60_90} />
               <DetailItem label="90-180 Days" value={financial.pay_90_180} />
               <DetailItem label="180+ Days" value={financial.pay_above_180} />
-              <DetailItem label="Total Payables" value={financial.total_accounts_payable} />
+              <DetailItem label="Total Payables" value={totalPayables} />
             </Section>
 
             {/* GST Information */}
@@ -150,8 +204,8 @@ const FinancialDetails = ({ financial, onClose }) => {
               <DetailItem label="Total GST Liability" value={financial.total_gst_liability} />
               <DetailItem label="Input Tax Credit" value={financial.input_tax_credit} />
               <DetailItem label="Monthly GST Paid" value={financial.monthly_gst_tax_paid} />
-              <DetailItem label="ITC Utilization Ratio" value={financial.itc_utilization_ratio} format="percentage" />
-              <DetailItem label="Tax to Revenue Ratio" value={financial.tax_to_revenue_ratio} format="percentage" />
+              <DetailItem label="ITC Utilization Ratio" value={isuRatio} format="percentage" />
+              <DetailItem label="Tax to Revenue Ratio" value={taxToRevenueRatio} format="percentage" />
             </Section>
 
             {/* Loan Details */}
@@ -161,7 +215,7 @@ const FinancialDetails = ({ financial, onClose }) => {
                 <DetailItem label="Loan Type" value={financial.loan_type || 'N/A'} format="text" />
                 <DetailItem label="EMI Amount" value={financial.emi_amount} />
                 <DetailItem label="Interest Rate" value={financial.interest_rate} format="percentage" />
-                <DetailItem label="EMI Burden %" value={financial.emi_burden_percent} format="percentage" />
+                <DetailItem label="EMI Burden %" value={emiBurdenPercent} format="percentage" />
               </Section>
             )}
 
@@ -171,11 +225,10 @@ const FinancialDetails = ({ financial, onClose }) => {
               <DetailItem label="Cash at End" value={financial.cash_at_end} />
               <DetailItem label="Avg Monthly Inflows" value={financial.avg_monthly_inflows} />
               <DetailItem label="Avg Monthly Outflows" value={financial.avg_monthly_outflows} />
-              <DetailItem label="Cash Reserve Months" value={financial.cash_reserve_months} format="text" />
+              <DetailItem label="Cash Reserve Months" value={cashReserveMonths} format="decimal" />
             </Section>
           </div>
         </div>
-      </div>
     </div>
   );
 };

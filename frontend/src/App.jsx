@@ -10,6 +10,9 @@ import AdminDashboard from './Pages/AdminDashboard';
 import UserDashboard from './Pages/UserDashboard';
 import BusinessProfile from './Pages/BusinessProfile';
 import FinacleReport from './Pages/FinacleReport';
+import FinancialFormPage from './Pages/FinancialFormPage';
+import FinancialDetailsPage from './Pages/FinancialDetailsPage';
+
 const dataEntryPages = [
   { path: '/data-entry/business-profile', element: <BusinessProfile /> },
 ];
@@ -48,6 +51,33 @@ const App = () => {
             element={
               <ProtectedRoute>
                 <FinacleReport />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/financial/new"
+            element={
+              <ProtectedRoute>
+                <FinancialFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/financial/:id/edit"
+            element={
+              <ProtectedRoute>
+                <FinancialFormPage />
+              </ProtectedRoute>
+            }
+          />
+
+          <Route
+            path="/financial/:id"
+            element={
+              <ProtectedRoute>
+                <FinancialDetailsPage />
               </ProtectedRoute>
             }
           />

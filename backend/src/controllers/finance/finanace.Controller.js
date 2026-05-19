@@ -64,17 +64,18 @@ export const createFinancial = async (req, res) => {
         dividends_paid, cash_at_beginning, cash_at_end, avg_monthly_inflows,
         avg_monthly_outflows, months_with_cash_shortage, created_by
       ) VALUES (
-        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16,
-        $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
-        $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44,
-        $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59, $60
+        $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18,
+        $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34,
+        $35, $36, $37, $38, $39, $40, $41, $42, $43, $44, $45, $46, $47, $48, $49, $50,
+        $51, $52, $53, $54, $55, $56, $57, $58, $59, $60, $61
       ) RETURNING *
     `;
     
     const values = [
       financialData.company_id, financialData.fiscal_year, financialData.month, 
       financialData.status || 'Draft',
-      financialData.revenue || 0, financialData.expenses || 0, financialData.cash_balance || 0,
+      financialData.revenue || 0, financialData.expenses || 0, 
+      financialData.cash_balance || 0,
       financialData.total_gst_liability || 0, financialData.input_tax_credit || 0, 
       financialData.monthly_gst_tax_paid || 0,
       financialData.recv_not_due || 0, financialData.recv_less_30 || 0, 
@@ -140,7 +141,7 @@ export const getAllFinancials = async (req, res) => {
       SELECT 
         f.*,
         c.company_name as company_name,
-        u.username as created_by_name
+        u.employee_name as created_by_name
       FROM financials f
       LEFT JOIN company c ON f.company_id = c.company_id
       LEFT JOIN users u ON f.created_by = u.user_id
@@ -257,7 +258,7 @@ export const updateFinancial = async (req, res) => {
     // Dynamically build update query
     const allowedFields = [
       'company_id', 'fiscal_year', 'month', 'status',
-      'revenue', 'expenses', 'cash_balance', 'total_gst_liability',
+      'revenue', 'expenses', 'b2b_sales', 'b2c_sales', 'cash_balance', 'total_gst_liability',
       'input_tax_credit', 'monthly_gst_tax_paid', 'recv_not_due',
       'recv_less_30', 'recv_30_60', 'recv_60_90', 'recv_90_180',
       'recv_above_180', 'pay_not_due', 'pay_less_30', 'pay_30_60',

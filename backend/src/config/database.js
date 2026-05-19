@@ -82,6 +82,8 @@ export const createTables = async () => {
         -- Revenue & Expenses
         revenue NUMERIC(15,2) DEFAULT 0,
         expenses NUMERIC(15,2) DEFAULT 0,
+        b2b_sales NUMERIC(15,2) DEFAULT 0,
+        b2c_sales NUMERIC(15,2) DEFAULT 0,
         net_profit NUMERIC(15,2) GENERATED ALWAYS AS 
             (revenue - expenses) STORED,
 
@@ -460,7 +462,6 @@ CREATE TABLE IF NOT EXISTS gst_documents_issued (
                 EXECUTE FUNCTION update_updated_at_column()
         `);
         console.log('✅ Trigger created');
-
 
 
         console.log('✅ All tables created successfully');
