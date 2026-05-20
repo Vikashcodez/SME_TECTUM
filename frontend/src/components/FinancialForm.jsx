@@ -15,8 +15,6 @@ const FinancialForm = ({ financial, onClose, onSuccess }) => {
     status: financial?.status || 'Draft',
     revenue: financial?.revenue || 0,
     expenses: financial?.expenses || 0,
-    b2b_sales: financial?.b2b_sales || 0,
-    b2c_sales: financial?.b2c_sales || 0,
     cash_balance: financial?.cash_balance || 0,
     total_gst_liability: financial?.total_gst_liability || 0,
     input_tax_credit: financial?.input_tax_credit || 0,
@@ -85,7 +83,7 @@ const FinancialForm = ({ financial, onClose, onSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    const numericFields = ['revenue', 'expenses', 'b2b_sales', 'b2c_sales', 'cash_balance', 'total_gst_liability', 'input_tax_credit', 'monthly_gst_tax_paid',
+    const numericFields = ['revenue', 'expenses', 'cash_balance', 'total_gst_liability', 'input_tax_credit', 'monthly_gst_tax_paid',
       'recv_not_due', 'recv_less_30', 'recv_30_60', 'recv_60_90', 'recv_90_180', 'recv_above_180',
       'pay_not_due', 'pay_less_30', 'pay_30_60', 'pay_60_90', 'pay_90_180', 'pay_above_180',
       'current_assets', 'current_liabilities', 'total_debt', 'wc_utilization_used', 'working_capital_limit', 
@@ -270,30 +268,7 @@ const FinancialForm = ({ financial, onClose, onSuccess }) => {
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      B2B Sales (₹)
-                    </label>
-                    <input
-                      type="number"
-                      name="b2b_sales"
-                      value={formData.b2b_sales}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      B2C Sales (₹)
-                    </label>
-                    <input
-                      type="number"
-                      name="b2c_sales"
-                      value={formData.b2c_sales}
-                      onChange={handleChange}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                    />
-                  </div>
+
                 </div>
                 <div className="mt-4 bg-white rounded-lg p-3 border border-gray-200">
                   <label className="block text-xs font-medium text-gray-500 mb-1">
