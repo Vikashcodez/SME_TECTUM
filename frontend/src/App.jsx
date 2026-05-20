@@ -17,7 +17,7 @@ import EntryModal from './Pages/Finance/EntryModal';
 
 const FinanceEntryPage = () => {
   const navigate = useNavigate();
-  return <EntryModal isOpen={true} onClose={() => navigate('/FinacleReport')} />;
+  return <EntryModal pageMode={true} onClose={() => navigate('/FinacleReport')} />;
 };
 
 const dataEntryPages = [

@@ -57,13 +57,14 @@ const initialState = {
   gst_documents_issued: { total_invoices_issued: '', invoices_cancelled: '' }
 };
 
-const EntryModal = ({ isOpen, onClose }) => {
+const EntryModal = ({ isOpen = true, onClose, pageMode = false }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const steps = ['Financial Data', 'GST Forms', 'Review & Save'];
 
-  if (!isOpen) return null;
+  if (!pageMode && !isOpen) return null;
 
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
@@ -108,9 +109,9 @@ const EntryModal = ({ isOpen, onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-10">
-      <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>
-      <div className="relative bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-slideUp">
+    <div className={pageMode ? 'min-h-screen bg-slate-50 p-6 lg:p-8' : 'fixed inset-0 z-50 flex items-start justify-center pt-10'}>
+      {!pageMode && <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>}
+      <div className={pageMode ? 'relative mx-auto bg-white rounded-2xl w-full max-w-6xl min-h-[calc(100vh-4rem)] overflow-hidden shadow-xl border border-slate-200 flex flex-col animate-slideUp' : 'relative bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-slideUp'}>
         {/* Header (same as before) */}
         <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-teal-500 to-emerald-600">
           <div className="flex items-center justify-between">
@@ -118,12 +119,59 @@ const EntryModal = ({ isOpen, onClose }) => {
               <h3 className="font-display font-bold text-xl text-white">Add Financial Entry</h3>
               <p className="text-sm text-teal-100 mt-1">Step {currentStep} of 3</p>
             </div>
-            <button onClick={onClose} className="w-8 h-8 rounded-lg bg-white/20 hover:bg-white/30 flex items-center justify-center transition-colors">
-              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+            <button
+              onClick={onClose}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-semibold transition-colors"
+            >
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Back
             </button>
           </div>
-          <div className="mt-4 flex gap-2">
-            {[1,2,3].map(i => <div key={i} className={`h-1 flex-1 rounded-full ${i <= currentStep ? 'bg-white' : 'bg-white/30'}`}></div>)}
+          <div className="mt-5 rounded-xl border border-white/20 bg-white/10 px-4 py-4">
+            <div className="relative">
+              <div className="absolute left-4 right-4 top-4 h-[2px] bg-white/30"></div>
+              <div
+                className="absolute left-4 top-4 h-[2px] bg-white transition-all duration-500"
+                style={{
+                  width: steps.length > 1 ? `calc((100% - 2rem) * ${(currentStep - 1) / (steps.length - 1)})` : '0%'
+                }}
+              ></div>
+
+              <div className="relative grid grid-cols-3 gap-2">
+                {steps.map((label, index) => {
+                  const stepNumber = index + 1;
+                  const isCompleted = stepNumber < currentStep;
+                  const isActive = stepNumber === currentStep;
+
+                  return (
+                    <div key={label} className="flex flex-col items-center text-center">
+                      <div
+                        className={`w-8 h-8 rounded-full border flex items-center justify-center text-xs font-bold transition-all duration-300 ${
+                          isCompleted
+                            ? 'bg-white text-teal-700 border-white shadow-sm'
+                            : isActive
+                              ? 'bg-teal-700 text-white border-white shadow-sm ring-2 ring-white/40'
+                              : 'bg-white/10 text-white border-white/40'
+                        }`}
+                      >
+                        {isCompleted ? (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          stepNumber
+                        )}
+                      </div>
+                      <p className={`mt-2 text-xs sm:text-sm font-semibold ${isCompleted || isActive ? 'text-white' : 'text-teal-100'}`}>
+                        {label}
+                      </p>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
 
