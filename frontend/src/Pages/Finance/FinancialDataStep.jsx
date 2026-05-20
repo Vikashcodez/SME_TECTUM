@@ -2,109 +2,96 @@
 import React from 'react';
 
 const FinancialDataStep = ({ formData, setFormData }) => {
-  
   const handleChange = (e) => {
     const { id, value } = e.target;
     setFormData(prev => ({ ...prev, [id]: value }));
   };
 
-  const parseAmount = (str) => {
-    if (!str) return 0;
-    return parseFloat(str.replace(/[^0-9.-]/g, '')) || 0;
-  };
-
-  const revenue = parseAmount(formData.totalRevenue || '0');
-  const expenses = parseAmount(formData.totalExpenses || '0');
-  const netProfit = revenue - expenses;
+  const InputField = ({ id, label, placeholder, type = "text" }) => (
+    <div>
+      <label className="block text-xs text-slate-500 mb-1 font-medium">{label}</label>
+      <input 
+        type={type} 
+        id={id} 
+        value={formData[id]} 
+        onChange={handleChange} 
+        placeholder={placeholder} 
+        className="w-full bg-white border border-slate-200 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-teal-500 outline-none" 
+      />
+    </div>
+  );
 
   return (
-    <div className="grid lg:grid-cols-2 gap-8 p-6">
-      {/* Left Col */}
+    <div className="grid lg:grid-cols-2 gap-8">
+      {/* Left Column */}
       <div className="space-y-6">
-        <div>
-          <label className="block text-sm font-semibold mb-2 text-slate-800">Select Month & Year</label>
-          <div className="grid grid-cols-2 gap-3">
-            <select id="month" value={formData.month} onChange={handleChange} className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 outline-none">
-              {['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'].map(m => <option key={m} value={m}>{m}</option>)}
-            </select>
-            <input type="number" id="year" value={formData.year} onChange={handleChange} className="bg-slate-50 border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 outline-none" />
-          </div>
-        </div>
-
         <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-          <h4 className="font-semibold mb-4 text-slate-800 flex items-center gap-2">
-            <span className="w-7 h-7 rounded-lg bg-teal-100 flex items-center justify-center text-teal-600">₹</span>
-            Revenue & Expenses
-          </h4>
+          <h4 className="font-semibold mb-4 text-slate-800">Revenue & Expenses</h4>
           <div className="space-y-4">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5 font-medium">Total Revenue (₹)</label>
-              <input type="text" id="totalRevenue" value={formData.totalRevenue} onChange={handleChange} placeholder="e.g. 5000000" className="w-full bg-white border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 outline-none" />
+            <div className="grid grid-cols-2 gap-4">
+              <InputField id="revenue" label="Total Revenue (₹)" placeholder="e.g. 5000000" />
+              <InputField id="expenses" label="Total Expenses (₹)" placeholder="e.g. 4200000" />
             </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5 font-medium">Total Expenses (₹)</label>
-              <input type="text" id="totalExpenses" value={formData.totalExpenses} onChange={handleChange} placeholder="e.g. 4200000" className="w-full bg-white border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 outline-none" />
+            {/* New Fields based on Schema */}
+            <div className="grid grid-cols-2 gap-4">
+              <InputField id="b2b_sales" label="B2B Sales (₹)" placeholder="Auto or Manual" />
+              <InputField id="b2c_sales" label="B2C Sales (₹)" placeholder="Auto or Manual" />
             </div>
-            <div className="bg-white rounded-lg p-4 border-2 border-dashed border-teal-300 bg-teal-50/50">
-              <div className="flex justify-between text-xs text-slate-500 mb-1">
-                <span className="font-medium">Net Profit (Auto)</span>
-                <span>Revenue − Expenses</span>
-              </div>
-              <p className={`font-display font-bold text-xl ${netProfit >= 0 ? 'text-teal-700' : 'text-red-600'}`}>
-                ₹{netProfit.toLocaleString('en-IN')}
+            <div className="bg-white rounded-lg p-4 border-2 border-dashed border-teal-300">
+              <p className="text-xs text-slate-500 mb-1">Net Profit (Auto Calculated in DB)</p>
+              <p className="font-bold text-slate-800">
+                ₹{(parseFloat(formData.revenue || 0) - parseFloat(formData.expenses || 0)).toLocaleString('en-IN')}
               </p>
             </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5 font-medium">Cash Balance (₹)</label>
-              <input type="text" id="cashBalance" value={formData.cashBalance} onChange={handleChange} placeholder="e.g. 1500000" className="w-full bg-white border border-slate-200 rounded-lg p-2.5 focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
+            <InputField id="cash_balance" label="Cash Balance (₹)" placeholder="Current cash" />
           </div>
         </div>
 
         <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
           <h4 className="font-semibold mb-4 text-slate-800">GST Summary</h4>
           <div className="grid grid-cols-3 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">GST Liability</label>
-              <input type="text" id="gstLiability" value={formData.gstLiability} onChange={handleChange} placeholder="₹0" className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">ITC</label>
-              <input type="text" id="itc" value={formData.itc} onChange={handleChange} placeholder="₹0" className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">GST Paid</label>
-              <input type="text" id="gstPaid" value={formData.gstPaid} onChange={handleChange} placeholder="₹0" className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
+            <InputField id="total_gst_liability" label="GST Liability" placeholder="₹0" />
+            <InputField id="input_tax_credit" label="ITC" placeholder="₹0" />
+            <InputField id="monthly_gst_tax_paid" label="GST Paid" placeholder="₹0" />
           </div>
         </div>
       </div>
 
-      {/* Right Col */}
+      {/* Right Column */}
       <div className="space-y-6">
         <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-          <h4 className="font-semibold mb-4 text-slate-800">Receivables Ageing</h4>
-          <div className="grid grid-cols-2 gap-3">
-            {['Not Due', '< 30 Days', '30-60 Days', '60-90 Days', '90-180 Days', '> 180 Days'].map(label => (
-              <div key={label}>
-                <label className="block text-xs text-slate-500 mb-1.5">{label}</label>
-                <input type="text" placeholder="₹0" className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
-              </div>
-            ))}
+          <h4 className="font-semibold mb-4 text-slate-800">Receivables Ageing (₹)</h4>
+          <div className="grid grid-cols-3 gap-3">
+            <InputField id="recv_not_due" label="Not Due" placeholder="₹0" />
+            <InputField id="recv_less_30" label="< 30 Days" placeholder="₹0" />
+            <InputField id="recv_30_60" label="30-60 Days" placeholder="₹0" />
+            <InputField id="recv_60_90" label="60-90 Days" placeholder="₹0" />
+            <InputField id="recv_90_180" label="90-180 Days" placeholder="₹0" />
+            <InputField id="recv_above_180" label="> 180 Days" placeholder="₹0" />
           </div>
         </div>
 
         <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
-          <h4 className="font-semibold mb-4 text-slate-800">Working Capital</h4>
+          <h4 className="font-semibold mb-4 text-slate-800">Payables Ageing (₹)</h4>
+          <div className="grid grid-cols-3 gap-3">
+            <InputField id="pay_not_due" label="Not Due" placeholder="₹0" />
+            <InputField id="pay_less_30" label="< 30 Days" placeholder="₹0" />
+            <InputField id="pay_30_60" label="30-60 Days" placeholder="₹0" />
+            <InputField id="pay_60_90" label="60-90 Days" placeholder="₹0" />
+            <InputField id="pay_90_180" label="90-180 Days" placeholder="₹0" />
+            <InputField id="pay_above_180" label="> 180 Days" placeholder="₹0" />
+          </div>
+        </div>
+
+        <div className="bg-slate-50 rounded-xl p-5 border border-slate-200">
+          <h4 className="font-semibold mb-4 text-slate-800">Working Capital & Debt</h4>
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">Current Assets</label>
-              <input type="text" placeholder="₹0" className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
-            <div>
-              <label className="block text-xs text-slate-500 mb-1.5">Current Liabilities</label>
-              <input type="text" placeholder="₹0" className="w-full bg-white border border-slate-200 rounded-lg p-2 text-sm focus:ring-2 focus:ring-teal-500 outline-none" />
-            </div>
+            <InputField id="current_assets" label="Current Assets" placeholder="₹0" />
+            <InputField id="current_liabilities" label="Current Liabilities" placeholder="₹0" />
+            <InputField id="total_debt" label="Total Debt" placeholder="₹0" />
+            <InputField id="equity" label="Equity" placeholder="₹0" />
+            <InputField id="wc_utilization_used" label="WC Utilized" placeholder="₹0" />
+            <InputField id="working_capital_limit" label="WC Limit" placeholder="₹0" />
           </div>
         </div>
       </div>
