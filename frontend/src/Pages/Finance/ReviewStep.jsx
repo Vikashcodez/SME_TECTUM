@@ -2,6 +2,17 @@
 import React from 'react';
 
 const ReviewStep = ({ formData }) => {
+  const revenueNum = Number(formData.revenue || 0);
+  const expensesNum = Number(formData.expenses || 0);
+  const netProfit = revenueNum - expensesNum;
+
+  const formatMoney = (value) => {
+    if (value === null || value === undefined || value === '') return 'Not provided';
+    const num = Number(value);
+    if (Number.isNaN(num)) return 'Not provided';
+    return `₹${num.toLocaleString('en-IN')}`;
+  };
+
   return (
     <div className="p-6">
       <div className="text-center py-8">
@@ -18,15 +29,19 @@ const ReviewStep = ({ formData }) => {
           <div className="space-y-2 text-sm text-slate-700">
             <div className="flex justify-between">
               <span className="text-slate-500">Month:</span>
-              <span className="font-medium">{formData.month} {formData.year}</span>
+              <span className="font-medium">{formData.month || 'Not selected'} {formData.fiscal_year || ''}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Revenue:</span>
-              <span className="font-medium">{formData.totalRevenue || 'Not provided'}</span>
+              <span className="font-medium">{formatMoney(formData.revenue)}</span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-500">Expenses:</span>
-              <span className="font-medium">{formData.totalExpenses || 'Not provided'}</span>
+              <span className="font-medium">{formatMoney(formData.expenses)}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="text-slate-500">Net Profit:</span>
+              <span className="font-medium">{formatMoney(netProfit)}</span>
             </div>
           </div>
         </div>

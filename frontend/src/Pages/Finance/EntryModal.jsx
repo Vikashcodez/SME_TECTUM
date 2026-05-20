@@ -10,8 +10,8 @@ const apiUrl = 'http://localhost:5000/api/financials';
 const initialState = {
   // Core Identification
   company_id: '1', // Should be dynamic from auth
-  fiscal_year: '2026-27',
-  month: 'May',
+  fiscal_year: '',
+  month: '',
   status: 'Draft',
 
   // Revenue & Expenses (financials table)
