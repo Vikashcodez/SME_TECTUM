@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
@@ -12,6 +12,13 @@ import BusinessProfile from './Pages/BusinessProfile';
 import FinacleReport from './Pages/FinacleReport';
 import FinancialFormPage from './Pages/FinancialFormPage';
 import FinancialDetailsPage from './Pages/FinancialDetailsPage';
+import FinanceDasboard from './Pages/Finance/Dashboard';
+import EntryModal from './Pages/Finance/EntryModal';
+
+const FinanceEntryPage = () => {
+  const navigate = useNavigate();
+  return <EntryModal isOpen={true} onClose={() => navigate('/FinacleReport')} />;
+};
 
 const dataEntryPages = [
   { path: '/data-entry/business-profile', element: <BusinessProfile /> },
@@ -50,7 +57,7 @@ const App = () => {
             path="/FinacleReport"
             element={
               <ProtectedRoute>
-                <FinacleReport />
+                <FinanceDasboard />
               </ProtectedRoute>
             }
           />
@@ -59,7 +66,7 @@ const App = () => {
             path="/financial/new"
             element={
               <ProtectedRoute>
-                <FinancialFormPage />
+                <FinanceEntryPage />
               </ProtectedRoute>
             }
           />
