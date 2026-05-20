@@ -2,6 +2,7 @@
 import React, { useContext, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { Download } from 'lucide-react';
 import { AuthContext } from '../../context/AuthContext';
 
 const Dashboard = ({ onAddClick }) => {
@@ -81,6 +82,154 @@ const Dashboard = ({ onAddClick }) => {
     const years = [...new Set(entries.map((row) => row.fiscal_year).filter(Boolean))];
     return years.sort((a, b) => String(b).localeCompare(String(a)));
   }, [entries]);
+
+  const latestEntry = useMemo(() => {
+    if (!entries.length) return null;
+
+    const monthOrder = {
+      january: 1,
+      february: 2,
+      march: 3,
+      april: 4,
+      may: 5,
+      june: 6,
+      july: 7,
+      august: 8,
+      september: 9,
+      october: 10,
+      november: 11,
+      december: 12
+    };
+
+    const parseYear = (value) => {
+      if (!value) return 0;
+      const yearText = String(value);
+      const firstPart = Number(yearText.split('-')[0]);
+      return Number.isNaN(firstPart) ? Number(yearText) || 0 : firstPart;
+    };
+
+    return [...entries].sort((a, b) => {
+      const yearDiff = parseYear(b.fiscal_year) - parseYear(a.fiscal_year);
+      if (yearDiff !== 0) return yearDiff;
+
+      const monthDiff = (monthOrder[String(b.month || '').toLowerCase()] || 0) - (monthOrder[String(a.month || '').toLowerCase()] || 0);
+      if (monthDiff !== 0) return monthDiff;
+
+      return Number(b.financial_id || 0) - Number(a.financial_id || 0);
+    })[0];
+  }, [entries]);
+
+  const healthMetrics = useMemo(() => {
+    if (!latestEntry) {
+      return {
+        financialScore: 0,
+        liquidityScore: 0,
+        currentRatio: null,
+        receivableDays: null,
+        liquidityRatio: 0,
+        wcUtilization: 0,
+        cashReserveMonths: 0,
+        debtToRevenue: null,
+        interestCoverage: null,
+        workingCapitalRatio: null,
+        over60DaysPercent: 0,
+        over90DaysPercent: 0,
+      };
+    }
+
+    const currentAssets = Number(latestEntry.current_assets || 0);
+    const currentLiabilities = Number(latestEntry.current_liabilities || 0);
+    const revenue = Number(latestEntry.revenue || 0);
+    const expenses = Number(latestEntry.expenses || 0);
+    const cashBalance = Number(latestEntry.cash_balance || 0);
+    const totalDebt = Number(latestEntry.total_debt || 0);
+    const interestExpense = Number(latestEntry.interest_expense || 0);
+    const workingCapital = currentAssets - currentLiabilities;
+    const currentRatio = currentLiabilities > 0 ? currentAssets / currentLiabilities : null;
+    const cashReserveMonths = Number(latestEntry.avg_monthly_outflows || 0) > 0 ? cashBalance / Number(latestEntry.avg_monthly_outflows || 1) : 0;
+    const debtToRevenue = revenue > 0 ? totalDebt / revenue : null;
+    const interestCoverage = interestExpense > 0 ? Math.max(0, (revenue - expenses) / interestExpense) : null;
+    const workingCapitalRatio = revenue > 0 ? workingCapital / revenue : null;
+
+    const receivablesTotal = Number(latestEntry.recv_not_due || 0)
+      + Number(latestEntry.recv_less_30 || 0)
+      + Number(latestEntry.recv_30_60 || 0)
+      + Number(latestEntry.recv_60_90 || 0)
+      + Number(latestEntry.recv_90_180 || 0)
+      + Number(latestEntry.recv_above_180 || 0);
+
+    const over60Days = Number(latestEntry.recv_60_90 || 0) + Number(latestEntry.recv_90_180 || 0) + Number(latestEntry.recv_above_180 || 0);
+    const over90Days = Number(latestEntry.recv_90_180 || 0) + Number(latestEntry.recv_above_180 || 0);
+    const over60DaysPercent = receivablesTotal > 0 ? (over60Days / receivablesTotal) * 100 : 0;
+    const over90DaysPercent = receivablesTotal > 0 ? (over90Days / receivablesTotal) * 100 : 0;
+
+    const receivableDays = revenue > 0 ? (receivablesTotal / revenue) * 30 : null;
+    const liquidityRatio = currentLiabilities > 0 ? cashBalance / currentLiabilities : 0;
+    const wcUtilization = Number(latestEntry.working_capital_limit || 0) > 0 ? (Number(latestEntry.wc_utilization_used || 0) / Number(latestEntry.working_capital_limit || 1)) * 100 : 0;
+
+    let financialScore = 0;
+    if (currentRatio !== null) {
+      if (currentRatio >= 1.5 && currentRatio <= 2) financialScore += 12;
+      else if (currentRatio >= 1.2 && currentRatio < 1.5) financialScore += 9;
+      else if (currentRatio > 2 && currentRatio <= 3) financialScore += 8;
+      else if (currentRatio > 0.8 && currentRatio < 1.2) financialScore += 5;
+    }
+    if (liquidityRatio >= 1) financialScore += 10;
+    else if (liquidityRatio >= 0.5) financialScore += 6;
+    else financialScore += 2;
+
+    if (cashReserveMonths >= 3) financialScore += 8;
+    else if (cashReserveMonths >= 2) financialScore += 6;
+    else if (cashReserveMonths >= 1) financialScore += 4;
+
+    if (debtToRevenue !== null) {
+      if (debtToRevenue <= 0.5) financialScore += 5;
+      else if (debtToRevenue <= 1) financialScore += 3;
+      else financialScore += 1;
+    }
+
+    if (over60DaysPercent <= 10) financialScore += 5;
+    else if (over60DaysPercent <= 25) financialScore += 3;
+    else financialScore += 1;
+
+    financialScore = Math.min(40, financialScore);
+
+    let liquidityScore = 0;
+    if (cashReserveMonths >= 3) liquidityScore += 8;
+    else if (cashReserveMonths >= 2) liquidityScore += 6;
+    else if (cashReserveMonths >= 1) liquidityScore += 4;
+
+    if (liquidityRatio >= 1) liquidityScore += 6;
+    else if (liquidityRatio >= 0.5) liquidityScore += 4;
+    else liquidityScore += 1;
+
+    if (currentRatio !== null) {
+      if (currentRatio >= 1.5 && currentRatio <= 2.0) liquidityScore += 6;
+      else if (currentRatio >= 1.2 && currentRatio < 1.5) liquidityScore += 4;
+      else liquidityScore += 1;
+    }
+
+    if (over90DaysPercent <= 10) liquidityScore += 0;
+    else if (over90DaysPercent <= 25) liquidityScore -= 1;
+    else liquidityScore -= 2;
+
+    liquidityScore = Math.max(0, Math.min(20, liquidityScore));
+
+    return {
+      financialScore,
+      liquidityScore,
+      currentRatio,
+      receivableDays,
+      liquidityRatio,
+      wcUtilization,
+      cashReserveMonths,
+      debtToRevenue,
+      interestCoverage,
+      workingCapitalRatio,
+      over60DaysPercent,
+      over90DaysPercent,
+    };
+  }, [latestEntry]);
   
   const getStatusBadge = (status) => {
     const normalized = (status || '').toLowerCase();
@@ -149,6 +298,158 @@ const Dashboard = ({ onAddClick }) => {
               <p className={`text-xs font-medium mt-1 ${stat.color}`}>{stat.change}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mb-10">
+          <div className="flex items-center justify-between gap-4 mb-6 flex-wrap">
+            <div>
+              <div className="flex items-center gap-3 mb-2">
+                <div className="w-1 h-6 bg-indigo-600 rounded-full"></div>
+                <h2 className="text-xl font-bold text-slate-900">Financial Health Report</h2>
+              </div>
+              <p className="text-sm text-slate-500 ml-4">Data for {latestEntry ? `${latestEntry.month} ${latestEntry.fiscal_year}` : 'latest available period'}</p>
+            </div>
+            <button className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-slate-200 bg-white text-sm font-semibold text-slate-700 hover:bg-slate-50 transition-colors">
+              <Download className="w-4 h-4" />
+              Download Excel
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+            <div className="xl:col-span-1 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <p className="text-sm font-semibold text-slate-500 uppercase tracking-wide">Financial Score</p>
+                  <p className="text-4xl font-bold text-slate-900 mt-1">{healthMetrics.financialScore}<span className="text-xl text-slate-400">/40</span></p>
+                </div>
+                <div className="h-16 w-16 rounded-full border-8 border-slate-100 border-t-indigo-600"></div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mb-5">
+                <div className="rounded-xl bg-indigo-50 p-4">
+                  <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide">Current Ratio</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{healthMetrics.currentRatio !== null ? healthMetrics.currentRatio.toFixed(2) : '—'}</p>
+                </div>
+                <div className="rounded-xl bg-cyan-50 p-4">
+                  <p className="text-xs font-semibold text-cyan-700 uppercase tracking-wide">Liquidity Score</p>
+                  <p className="text-xl font-bold text-slate-900 mt-1">{healthMetrics.liquidityScore}<span className="text-sm text-slate-400">/20</span></p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Receivable Days</span>
+                  <span className="font-semibold text-slate-900">{healthMetrics.receivableDays !== null ? `${healthMetrics.receivableDays.toFixed(0)} days` : '—'}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Cash Reserve</span>
+                  <span className="font-semibold text-slate-900">{healthMetrics.cashReserveMonths.toFixed(1)} months</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-slate-500">Current Ratio Target</span>
+                  <span className="font-semibold text-slate-900">1.5 - 2.0</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="xl:col-span-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-slate-900">Liquidity</h3>
+                  <span className="text-sm font-semibold text-slate-500">Ratio {healthMetrics.liquidityRatio.toFixed(2)}</span>
+                </div>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2 text-sm">
+                      <span className="text-slate-500">Liquidity Score</span>
+                      <span className="font-semibold text-slate-900">{healthMetrics.liquidityScore}/20</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full bg-cyan-500" style={{ width: `${(healthMetrics.liquidityScore / 20) * 100}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2 text-sm">
+                      <span className="text-slate-500">WC Utilization</span>
+                      <span className="font-semibold text-slate-900">{healthMetrics.wcUtilization.toFixed(0)}%</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full bg-indigo-500" style={{ width: `${Math.min(100, healthMetrics.wcUtilization)}%` }}></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex items-center justify-between mb-2 text-sm">
+                      <span className="text-slate-500">Current Ratio</span>
+                      <span className="font-semibold text-slate-900">{healthMetrics.currentRatio !== null ? healthMetrics.currentRatio.toFixed(2) : '—'}</span>
+                    </div>
+                    <div className="h-2 rounded-full bg-slate-100 overflow-hidden">
+                      <div className="h-full rounded-full bg-emerald-500" style={{ width: `${healthMetrics.currentRatio ? Math.min(100, (healthMetrics.currentRatio / 2.5) * 100) : 0}%` }}></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-bold text-slate-900 mb-4">Financial Stability Breakdown</h3>
+                <div className="grid grid-cols-2 gap-4 mb-4">
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Liquidity</p>
+                    <p className="text-lg font-bold text-slate-900 mt-1">{healthMetrics.liquidityScore}/20</p>
+                  </div>
+                  <div className="rounded-xl bg-slate-50 p-4">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">Debt & Repayment</p>
+                    <p className="text-lg font-bold text-slate-900 mt-1">{healthMetrics.financialScore}/40</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 text-sm">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Debt-to-Revenue</span>
+                    <span className="font-semibold text-slate-900">{healthMetrics.debtToRevenue !== null ? healthMetrics.debtToRevenue.toFixed(2) : '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Interest Coverage</span>
+                    <span className="font-semibold text-slate-900">{healthMetrics.interestCoverage !== null ? healthMetrics.interestCoverage.toFixed(2) : '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Working Capital Ratio</span>
+                    <span className="font-semibold text-slate-900">{healthMetrics.workingCapitalRatio !== null ? healthMetrics.workingCapitalRatio.toFixed(2) : '—'}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Over 60 Days %</span>
+                    <span className="font-semibold text-slate-900">{healthMetrics.over60DaysPercent.toFixed(0)}%</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-500">Over 90 Days %</span>
+                    <span className="font-semibold text-slate-900">{healthMetrics.over90DaysPercent.toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="lg:col-span-2 bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+                <h3 className="font-bold text-slate-900 mb-4">Detailed Metrics</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+                  {[
+                    { label: 'Cash Reserve', value: `${healthMetrics.cashReserveMonths.toFixed(1)} months` },
+                    { label: 'Debt-to-Revenue', value: healthMetrics.debtToRevenue !== null ? healthMetrics.debtToRevenue.toFixed(2) : '—' },
+                    { label: 'Interest Coverage', value: healthMetrics.interestCoverage !== null ? healthMetrics.interestCoverage.toFixed(2) : '—' },
+                    { label: 'Working Capital Ratio', value: healthMetrics.workingCapitalRatio !== null ? healthMetrics.workingCapitalRatio.toFixed(2) : '—' },
+                    { label: 'Over 60 Days %', value: `${healthMetrics.over60DaysPercent.toFixed(0)}%` },
+                    { label: 'Over 90 Days %', value: `${healthMetrics.over90DaysPercent.toFixed(0)}%` },
+                    { label: 'Liquidity Score', value: `${healthMetrics.liquidityScore}/20` },
+                    { label: 'Financial Score', value: `${healthMetrics.financialScore}/40` }
+                  ].map((metric) => (
+                    <div key={metric.label} className="rounded-xl bg-slate-50 p-4 border border-slate-100">
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide">{metric.label}</p>
+                      <p className="text-lg font-bold text-slate-900 mt-1">{metric.value}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Table */}
