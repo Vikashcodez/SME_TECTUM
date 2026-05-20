@@ -1,5 +1,7 @@
 // components/EntryModal.jsx
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Layout from '../../components/layout/Layout';
 import FinancialDataStep from './FinancialDataStep';
 import GSTFormsStep from './GSTFormsStep';
 import ReviewStep from './ReviewStep';
@@ -58,11 +60,17 @@ const initialState = {
 };
 
 const EntryModal = ({ isOpen = true, onClose, pageMode = false }) => {
+  const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(initialState);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
   const steps = ['Financial Data', 'GST Forms', 'Review & Save'];
+
+  const handleClose = () => {
+    if (onClose) return onClose();
+    if (pageMode) return navigate(-1);
+  };
 
   if (!pageMode && !isOpen) return null;
 
@@ -108,9 +116,9 @@ const EntryModal = ({ isOpen = true, onClose, pageMode = false }) => {
     }
   };
 
-  return (
+  const content = (
     <div className={pageMode ? 'min-h-screen bg-slate-50 p-6 lg:p-8' : 'fixed inset-0 z-50 flex items-start justify-center pt-10'}>
-      {!pageMode && <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}></div>}
+      {!pageMode && <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={handleClose}></div>}
       <div className={pageMode ? 'relative mx-auto bg-white rounded-2xl w-full max-w-6xl min-h-[calc(100vh-4rem)] overflow-hidden shadow-xl border border-slate-200 flex flex-col animate-slideUp' : 'relative bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden shadow-2xl flex flex-col animate-slideUp'}>
         {/* Header (same as before) */}
         <div className="px-6 py-5 border-b border-slate-200 bg-gradient-to-r from-teal-500 to-emerald-600">
@@ -120,7 +128,7 @@ const EntryModal = ({ isOpen = true, onClose, pageMode = false }) => {
               <p className="text-sm text-teal-100 mt-1">Step {currentStep} of 3</p>
             </div>
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/15 hover:bg-white/25 border border-white/30 text-white text-sm font-semibold transition-colors"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -190,7 +198,7 @@ const EntryModal = ({ isOpen = true, onClose, pageMode = false }) => {
             ← Back
           </button>
           <div className="flex items-center gap-3 ml-auto">
-            <button onClick={onClose} className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors font-medium text-slate-700">Cancel</button>
+            <button onClick={handleClose} className="px-4 py-2 border border-slate-300 rounded-lg hover:bg-slate-100 transition-colors font-medium text-slate-700">Cancel</button>
             {currentStep < 3 ? (
               <button onClick={nextStep} className="px-6 py-2.5 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all shadow-sm">Next Step</button>
             ) : (
@@ -207,6 +215,11 @@ const EntryModal = ({ isOpen = true, onClose, pageMode = false }) => {
       </div>
     </div>
   );
+
+  return pageMode ? (
+    <Layout title="Add Financial Entry">{content}</Layout>
+  ) : content;
+
 };
 
 export default EntryModal;
