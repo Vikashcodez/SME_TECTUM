@@ -1,8 +1,10 @@
 // components/EntryModal.jsx
 import React, { useState } from 'react';
-import FinancialDataStep from './steps/FinancialDataStep';
-import GSTFormsStep from './steps/GSTFormsStep';
-import ReviewStep from './steps/ReviewStep';
+import FinancialDataStep from './FinancialDataStep';
+import GSTFormsStep from './GSTFormsStep';
+import ReviewStep from './ReviewStep';
+
+const apiUrl = 'http://localhost:5000/api/financials';
 
 // Initial state strictly matching DB columns
 const initialState = {
@@ -58,18 +60,42 @@ const initialState = {
 const EntryModal = ({ isOpen, onClose }) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(initialState);
+  const [loading, setLoading] = useState(false);
+  const [submitError, setSubmitError] = useState('');
 
   if (!isOpen) return null;
 
   const nextStep = () => setCurrentStep(prev => Math.min(prev + 1, 3));
   const prevStep = () => setCurrentStep(prev => Math.max(prev - 1, 1));
 
-  const handleSave = () => {
-    console.log("Payload for Backend:", formData);
-    alert('Data prepared for backend. Check console.');
-    onClose();
-    setFormData(initialState);
-    setCurrentStep(1);
+  const handleSave = async () => {
+    setLoading(true);
+    setSubmitError('');
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData)
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || 'Unable to save financial entry');
+      }
+
+      alert('Financial entry saved successfully');
+      onClose();
+      setFormData(initialState);
+      setCurrentStep(1);
+    } catch (error) {
+      setSubmitError(error.message || 'Unable to save financial entry');
+    } finally {
+      setLoading(false);
+    }
   };
 
   const renderStep = () => {
@@ -102,6 +128,11 @@ const EntryModal = ({ isOpen, onClose }) => {
         </div>
 
         <div className="flex-1 overflow-y-auto bg-white p-6">
+          {submitError && (
+            <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {submitError}
+            </div>
+          )}
           {renderStep()}
         </div>
 
@@ -115,7 +146,13 @@ const EntryModal = ({ isOpen, onClose }) => {
             {currentStep < 3 ? (
               <button onClick={nextStep} className="px-6 py-2.5 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all shadow-sm">Next Step</button>
             ) : (
-              <button onClick={handleSave} className="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-sm">Save Entry</button>
+              <button
+                onClick={handleSave}
+                disabled={loading}
+                className="px-6 py-2.5 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-sm disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {loading ? 'Saving...' : 'Save Entry'}
+              </button>
             )}
           </div>
         </div>
