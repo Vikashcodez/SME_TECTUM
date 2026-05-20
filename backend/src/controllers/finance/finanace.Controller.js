@@ -68,7 +68,7 @@ export const createFinancial = async (req, res) => {
         $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30,
         $31, $32, $33, $34, $35, $36, $37, $38, $39, $40, $41, $42, $43, $44,
         $45, $46, $47, $48, $49, $50, $51, $52, $53, $54, $55, $56, $57, $58, $59
-      ) RETURNING *
+      ) RETURNING financial_id
     `;
     
     const values = [
@@ -105,16 +105,156 @@ export const createFinancial = async (req, res) => {
     ];
     
     const result = await client.query(query, values);
+    const financialId = result.rows[0].financial_id;
     
+    // ==============================================
+    // INSERT GST DATA AFTER FINANCIAL ENTRY
+    // ==============================================
+    
+    // 1. GST B2B SALES
+    if (financialData.gst_b2b_sales && financialData.gst_b2b_sales.length > 0) {
+      for (const sale of financialData.gst_b2b_sales) {
+        await client.query(`
+          INSERT INTO gst_b2b_sales (
+            financial_id, invoice_no, invoice_date, gstin_no, party_name,
+            taxable_value, igst, cgst, sgst, cess, gst_tax_rate,
+            category, product_service, hsn_sac_code
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14)
+        `, [
+          financialId, sale.invoice_no, sale.invoice_date, sale.gstin_no, sale.party_name,
+          sale.taxable_value || 0, sale.igst || 0, sale.cgst || 0, sale.sgst || 0,
+          sale.cess || 0, sale.gst_tax_rate, sale.category, sale.product_service,
+          sale.hsn_sac_code
+        ]);
+      }
+    }
+    
+    // 2. GST B2C INTER STATE SALES
+    if (financialData.gst_b2c_inter_state_sales && financialData.gst_b2c_inter_state_sales.length > 0) {
+      for (const sale of financialData.gst_b2c_inter_state_sales) {
+        await client.query(`
+          INSERT INTO gst_b2c_inter_state_sales (
+            financial_id, invoice_no, invoice_date, place_of_supply,
+            taxable_value, igst
+          ) VALUES ($1, $2, $3, $4, $5, $6)
+        `, [
+          financialId, sale.invoice_no, sale.invoice_date, sale.place_of_supply,
+          sale.taxable_value || 0, sale.igst || 0
+        ]);
+      }
+    }
+    
+    // 3. GST B2C INTRA STATE SALES
+    if (financialData.gst_b2c_intra_state_sales && financialData.gst_b2c_intra_state_sales.length > 0) {
+      for (const sale of financialData.gst_b2c_intra_state_sales) {
+        await client.query(`
+          INSERT INTO gst_b2c_intra_state_sales (
+            financial_id, place_of_supply, taxable_value, cgst, sgst
+          ) VALUES ($1, $2, $3, $4, $5)
+        `, [
+          financialId, sale.place_of_supply, sale.taxable_value || 0,
+          sale.cgst || 0, sale.sgst || 0
+        ]);
+      }
+    }
+    
+    // 4. GST EXPORT SALES
+    if (financialData.gst_exports && financialData.gst_exports.length > 0) {
+      for (const exportSale of financialData.gst_exports) {
+        await client.query(`
+          INSERT INTO gst_exports (
+            financial_id, invoice_no, invoice_date, export_value,
+            igst, port_code, shipping_bill
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        `, [
+          financialId, exportSale.invoice_no, exportSale.invoice_date,
+          exportSale.export_value || 0, exportSale.igst || 0,
+          exportSale.port_code, exportSale.shipping_bill
+        ]);
+      }
+    }
+    
+    // 5. NIL RATED / EXEMPT SALES
+    if (financialData.gst_nil_exempt_sales) {
+      await client.query(`
+        INSERT INTO gst_nil_exempt_sales (
+          financial_id, inter_state_sales, intra_state_sales
+        ) VALUES ($1, $2, $3)
+      `, [
+        financialId,
+        financialData.gst_nil_exempt_sales.inter_state_sales || 0,
+        financialData.gst_nil_exempt_sales.intra_state_sales || 0
+      ]);
+    }
+    
+    // 6. CREDIT / DEBIT NOTES
+    if (financialData.gst_credit_debit_notes && financialData.gst_credit_debit_notes.length > 0) {
+      for (const note of financialData.gst_credit_debit_notes) {
+        await client.query(`
+          INSERT INTO gst_credit_debit_notes (
+            financial_id, gstin_no, note_no, note_date, note_value
+          ) VALUES ($1, $2, $3, $4, $5)
+        `, [
+          financialId, note.gstin_no, note.note_no, note.note_date,
+          note.note_value || 0
+        ]);
+      }
+    }
+    
+    // 7. ADVANCES RECEIVED
+    if (financialData.gst_advances_received && financialData.gst_advances_received.length > 0) {
+      for (const advance of financialData.gst_advances_received) {
+        await client.query(`
+          INSERT INTO gst_advances_received (
+            financial_id, place_of_supply, gross_advance_received
+          ) VALUES ($1, $2, $3)
+        `, [
+          financialId, advance.place_of_supply,
+          advance.gross_advance_received || 0
+        ]);
+      }
+    }
+    
+    // 8. HSN WISE SUMMARY
+    if (financialData.gst_hsn_summary && financialData.gst_hsn_summary.length > 0) {
+      for (const hsn of financialData.gst_hsn_summary) {
+        await client.query(`
+          INSERT INTO gst_hsn_summary (
+            financial_id, hsn_code, total_qty, total_taxable_value,
+            rate, igst, cgst, sgst
+          ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+        `, [
+          financialId, hsn.hsn_code, hsn.total_qty || 0,
+          hsn.total_taxable_value || 0, hsn.rate,
+          hsn.igst || 0, hsn.cgst || 0, hsn.sgst || 0
+        ]);
+      }
+    }
+    
+    // 9. DOCUMENTS ISSUED
+    if (financialData.gst_documents_issued) {
+      await client.query(`
+        INSERT INTO gst_documents_issued (
+          financial_id, total_invoices_issued, invoices_cancelled
+        ) VALUES ($1, $2, $3)
+      `, [
+        financialId,
+        financialData.gst_documents_issued.total_invoices_issued || 0,
+        financialData.gst_documents_issued.invoices_cancelled || 0
+      ]);
+    }
+    
+    // Commit transaction
     await client.query('COMMIT');
     
     res.status(201).json({
       success: true,
-      message: 'Financial record created successfully',
-      data: result.rows[0]
+      message: 'Financial record and GST data created successfully',
+      data: { financial_id: financialId }
     });
   } catch (error) {
     if (client) await client.query('ROLLBACK');
+    console.error('Error creating financial record:', error);
     handleDatabaseError(error, res, 'Error creating financial record');
   } finally {
     if (client) client.release();
